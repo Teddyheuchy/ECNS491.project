@@ -1,0 +1,24 @@
+---
+title: "finalProjectReport"
+output: html_document
+date: "2022-11-17"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#Topic: An investigation of Domestic Gas Prices
+## By Wyatt Sigafoos and Teddy Heutching 
+
+Description of the Data:
+- The data we are using was obtained from EIA.gov reflecting gas prices of 
+various states and regions within the US.
+
+The Logic of our Process:
+- We decided to join two different datasets by date, one for overall average gas price 
+in the US and the other being the area specific gas prices. 
+
+Findings:
+- 
+
