@@ -8,6 +8,7 @@
 #Step 1: Download and import both data files
 setwd("/Users/wyattsig/Desktop/ECNS 491 Final Project")
 library(readr)
+library(readxl)
 library(tidyverse)
 us = read_csv("RetailUS.csv")
 world1 = read_csv("WorldPrices/API_EP.PMP.SGAS.CD_DS2_en_csv_v2_4538231.csv")
@@ -25,3 +26,5 @@ usable_data_us = us[5:359,]
 cleanUS = usable_data_us |> 
   str_split(pattern = ',')
 clean_data = cleanUS[[1]]
+usAreas = read_xls("fullHistoryGas.xls",sheet = "Data 1")
+
