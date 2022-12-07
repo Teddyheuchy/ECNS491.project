@@ -15,10 +15,11 @@ library(tmap)
 library(ggplot2)
 library(usmap)
 library(lubridate)
-us = read_csv("RetailUS.csv")
-world1 = read_csv("WorldPrices/API_EP.PMP.SGAS.CD_DS2_en_csv_v2_4538231.csv")
-world2 = read_csv("WorldPrices/Metadata_Country_API_EP.PMP.SGAS.CD_DS2_en_csv_v2_4538231.csv")
-world3 = read_csv("WorldPrices/Metadata_Indicator_API_EP.PMP.SGAS.CD_DS2_en_csv_v2_4538231.csv")
+library(stringr)
+# us = read_csv("RetailUS.csv")
+# world1 = read_csv("WorldPrices/API_EP.PMP.SGAS.CD_DS2_en_csv_v2_4538231.csv")
+# world2 = read_csv("WorldPrices/Metadata_Country_API_EP.PMP.SGAS.CD_DS2_en_csv_v2_4538231.csv")
+# world3 = read_csv("WorldPrices/Metadata_Indicator_API_EP.PMP.SGAS.CD_DS2_en_csv_v2_4538231.csv")
 ################################################################################
 #Step 2: See what data looks like
 #the first 5 rows are dataset info and row 5 and lower need date and price separated
@@ -85,13 +86,59 @@ plot_usmap(regions = "states") +
 # plot_usmap(include = .west_region, labels = TRUE)
 # plot_usmap(include = .west_south_central, labels = TRUE)
 
-# regular_conventional = read_xls("fullHistoryGas.xls",sheet = "Data 1")
-# cnames = regular_conventional[2,]
-# colnames(regular_conventional) = cnames
-# regular_conventional = regular_conventional |> 
-#   filter(!row_number() %in% c(1,2)) |> 
-#   transform(Date = as.numeric(Date))
-
 #ridge plot, exploratory analysis 
 
+plot(allGrades_all$Date,allGrades_all$`Weekly U.S. All Grades All Formulations Retail Gasoline Prices  (Dollars per Gallon)`, type = 'l', ylim = range(0,7), col = 1) +
+  points(allGrades_all$Date,allGrades_all$`Weekly California All Grades All Formulations Retail Gasoline Prices  (Dollars per Gallon)`, type = 'l', col = 2) +
+  points(allGrades_all$Date,allGrades_all$`Weekly Colorado All Grades All Formulations Retail Gasoline Prices  (Dollars per Gallon)`, type = 'l', col = 3) + 
+  points(allGrades_all$Date,allGrades_all$`Weekly Florida All Grades All Formulations Retail Gasoline Prices  (Dollars per Gallon)`, type = 'l', col = 4) +
+  points(allGrades_all$Date,allGrades_all$`Weekly Massachusetts All Grades All Formulations Retail Gasoline Prices  (Dollars per Gallon)`, type = 'l', col = 5) +
+  points(allGrades_all$Date,allGrades_all$`Weekly Minnesota All Grades All Formulations Retail Gasoline Prices  (Dollars per Gallon)`, type = 'l', col = 6) +
+  points(allGrades_all$Date,allGrades_all$`Weekly New York All Grades All Formulations Retail Gasoline Prices  (Dollars per Gallon)`, type = 'l', col = 7) +
+  points(allGrades_all$Date,allGrades_all$`Weekly Ohio All Grades All Formulations Retail Gasoline Prices  (Dollars per Gallon)`, type = 'l', col = 8) +
+  points(allGrades_all$Date,allGrades_all$`Weekly Texas All Grades All Formulations Retail Gasoline Prices  (Dollars per Gallon)`, type = 'l', col = 9) + 
+  points(allGrades_all$Date,allGrades_all$`Weekly Washington All Grades All Formulations Retail Gasoline Prices  (Dollars per Gallon)`, type = 'l', col = 10)
 
+
+
+
+
+
+CA_data = allGrades_all |> 
+  select(Date,`Weekly California All Grades All Formulations Retail Gasoline Prices  (Dollars per Gallon)`) |> 
+  mutate(state = rep('CA',length(allGrades_all$`Weekly California All Grades All Formulations Retail Gasoline Prices  (Dollars per Gallon)`))) 
+
+CO_data = allGrades_all |> 
+  select(Date,`Weekly Colorado All Grades All Formulations Retail Gasoline Prices  (Dollars per Gallon)`) |> 
+  mutate(state = rep('CO',length(allGrades_all$`Weekly Colorado All Grades All Formulations Retail Gasoline Prices  (Dollars per Gallon)`))) 
+
+FL_data = allGrades_all |> 
+  select(Date,`Weekly Florida All Grades All Formulations Retail Gasoline Prices  (Dollars per Gallon)`) |> 
+  mutate(state = rep('FL',length(allGrades_all$`Weekly Florida All Grades All Formulations Retail Gasoline Prices  (Dollars per Gallon)`))) 
+
+MA_data = allGrades_all |> 
+  select(Date,`Weekly Massachusetts All Grades All Formulations Retail Gasoline Prices  (Dollars per Gallon)`) |> 
+  mutate(state = rep('MA',length(allGrades_all$`Weekly Massachusetts All Grades All Formulations Retail Gasoline Prices  (Dollars per Gallon)`))) 
+
+MN_data = allGrades_all |> 
+  select(Date,`Weekly Minnesota All Grades All Formulations Retail Gasoline Prices  (Dollars per Gallon)`) |> 
+  mutate(state = rep('MN',length(allGrades_all$`Weekly Minnesota All Grades All Formulations Retail Gasoline Prices  (Dollars per Gallon)`))) 
+
+NY_data = allGrades_all |> 
+  select(Date,`Weekly New York All Grades All Formulations Retail Gasoline Prices  (Dollars per Gallon)`) |> 
+  mutate(state = rep('NY',length(allGrades_all$`Weekly New York All Grades All Formulations Retail Gasoline Prices  (Dollars per Gallon)`))) 
+
+OH_data = allGrades_all |> 
+  select(Date,`Weekly Ohio All Grades All Formulations Retail Gasoline Prices  (Dollars per Gallon)`) |> 
+  mutate(state = rep('OH',length(allGrades_all$`Weekly Ohio All Grades All Formulations Retail Gasoline Prices  (Dollars per Gallon)`))) 
+
+TX_data = allGrades_all |> 
+  select(Date,`Weekly Texas All Grades All Formulations Retail Gasoline Prices  (Dollars per Gallon)`) |> 
+  mutate(state = rep('TX',length(allGrades_all$`Weekly Texas All Grades All Formulations Retail Gasoline Prices  (Dollars per Gallon)`))) 
+
+WA_data = allGrades_all |> 
+  select(Date,`Weekly Washington All Grades All Formulations Retail Gasoline Prices  (Dollars per Gallon)`) |> 
+  mutate(state = rep('WA',length(allGrades_all$`Weekly Washington All Grades All Formulations Retail Gasoline Prices  (Dollars per Gallon)`))) 
+
+#all_States = rbind(CA_data,CO_data)
+#FL_data,MA_data,MN_data,NY_data,OH_data,TX_data,WA_data
