@@ -1,0 +1,278 @@
+---
+title: "finalProjectReport"
+output: html_document
+date: "2022-11-17"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#Topic: An investigation of Domestic Gas Prices
+## By Wyatt Sigafoos and Teddy Heuchling 
+
+###Introduction  
+Ranking as the second highest expense facing the modern household, transportation 
+plays a large role in the day to day functionality of life. The main method of 
+transportation for the majority of people in America for the last century has been
+the automobile, and in order to better understand how this transportation cost factors
+into the budget of the average household, an investigation into the price of gas 
+was conducted. Using data gathered from the Energy Information Administration (EIA),
+changes in the price of gas were investigated to see which regions faced the largest 
+expenses for using cars over the last few decades. The data spans across nine different
+states beginning in 2003 and ends in 2022. While the EIA publishes prices for both 
+conventional gas and reformulated gas, the overall average price was used because 
+we were interested in general trends rather than changes in specific formulations. 
+
+###Data Processing 
+The six steps in data processing are data collection, data preparation, data input, processing, data output. The data collection process involved finding data from EIA like stated above. The data preparation stage was already done as there were no extraneous strings.The team used inner joins to combine conventional and reformulated gas data for each of the three gas types: Regular, Mid grade, Premium. The data input stage was where our team plotted prices versus time to see graphical interpretation. The processing stage was done at this stage as the data was clean and ordered and sorted correctly. In the data ouput stage we could have used statistical tables but there are confusing and hard to read and interpret so we used graphs to explain how the data fit together. 
+
+###Transformations 
+Our team chose not to normalize the data as it was already filtered for duplicated and NAs. The transformation process was where our group used time series plots using the ggplot package. Next the team used shape data files to create a map of the USA and plot our 9 states and their average prices. The next step  we tried to use a animation package to show the changing prices over time for the 9 states but no results were found from this. 
+
+Results:
+Graph 1: In graph 1 there shows a trend that reformulated gas has a higher price than regular gasoline and this makes logical sense as it is regular gas that is processed more so more labor goes into making the product. The large drop in gas prices before 2010 is apparent in each type of gas and it could be related to the 2008 financial crisis. The price fell due to diminishing demand and lower corporate earnings. 
+https://www.investopedia.com/ask/answers/052715/how-did-financial-crisis-affect-oil-and-gas-sector.asp 
+
+Graph 2 : Graph 2 shows that in times of high volatility the differences in prices between grades is higher as they flucuate more where as in times of low volatility the ranges in prices narrows. In an article discussing Gas volatility they mention that gasoline prices are volatile, cyclic and based off of demand and supply and geopolicitical forces. 
+https://smith.queensu.ca/insight/content/Why-Are-Gas-Prices-so-Volatile-Now.php 
+
+Graph 3: Graph 3 explains how different gasoline prices are in each of the 9 states and how they change. The graph shows the disparity between the high costed states and the low cost states. A possible reason for California being higher priced is that they are smog reducing measures in place and high taxes and a high cost of living. Another possible explanation is that California is a large gasoline produced and refiner and supplies western states such as Oregon and Arizona and Nevada. Oregon was not in the data but it would be interesting to look at as they have no refineries of their own. 
+https://abcnews.go.com/Business/story?id=88275&page=1 
+
+Graph 4: Graph 4 was used to see how relative regions were similar or not in price to neighbors. In the graph gasoline prices have increased in California due to refineries being temporarily offline but prices will trend down as California reopen and allow less expensive blends of gasoline to be sold. Gasonline prices vary across state line due to relative distance to a refinery and pipelines and plant and refinery issues and state taxes. 
+https://www.usatoday.com/story/money/2022/10/08/why-gas-prices-higher-california-than-texas/8207267001/ 
+
+
+
+```{r,echo=FALSE,message=FALSE}
+library(readr)
+library(readxl)
+library(tidyverse)
+library(sf)
+library(tmap)
+library(ggplot2)
+library(usmap)
+library(lubridate)
+library(stringr)
+library(ggplot2)
+library(maps)
+library(mapdata)
+library(gifski)
+library(patchwork)
+
+regular_conventional = read_xls("fullHistoryGas.xls",sheet = "Data 1", col_types = c("date",rep("numeric",20)),skip = 2)
+regular_reformulated = read_xls("fullHistoryGas.xls",sheet = "Data 2", col_types = c("date",rep("numeric",18)),skip = 2)
+regular_all = read_xls("fullHistoryGas.xls",sheet = "Data 3", col_types = c("date",rep("numeric",28)),skip = 2)
+
+midgrade_conventional = read_xls("fullHistoryGas.xls",sheet = "Data 4", col_types = c("date",rep("numeric",20)),skip = 2)
+midgrade_reformulated = read_xls("fullHistoryGas.xls",sheet = "Data 5", col_types = c("date",rep("numeric",18)),skip = 2)
+midgrade_all = read_xls("fullHistoryGas.xls",sheet = "Data 6", col_types = c("date",rep("numeric",28)),skip = 2)
+
+premium_conventional = read_xls("fullHistoryGas.xls",sheet = "Data 7", col_types = c("date",rep("numeric",20)),skip = 2)
+premium_reformulated = read_xls("fullHistoryGas.xls",sheet = "Data 8", col_types = c("date",rep("numeric",18)),skip = 2)
+premium_all = read_xls("fullHistoryGas.xls",sheet = "Data 9", col_types = c("date",rep("numeric",28)),skip = 2)
+
+allGrades_conventional = read_xls("fullHistoryGas.xls",sheet = "Data 10", col_types = c("date",rep("numeric",20)),skip = 2)
+allGrades_reformulated = read_xls("fullHistoryGas.xls",sheet = "Data 11", col_types = c("date",rep("numeric",18)),skip = 2)
+allGrades_all = read_xls("fullHistoryGas.xls",sheet = "Data 12", col_types = c("date",rep("numeric",28)),skip = 2)
+
+```
+
+
+
+
+###Results:  
+####Graph 1 
+```{r,echo=FALSE,message=FALSE}
+# plot the difference between reformulated and conventional gas
+columnNames = c("Date","Conventional","Reformulated")      #create a vector for column names 
+                                                           #to use once for subset of the raw data
+reg_reformulated_vs_conventional = regular_conventional |> #
+  select(1:2) |>                                           #select the date and general price for 
+  inner_join(regular_reformulated |> select(1:2))          #regular conventional and reformulated gas
+                                                           #and inner_join them into one dataframe
+colnames(reg_reformulated_vs_conventional) = columnNames   #change the column names for easier manipulation
+
+mid_reformulated_vs_conventional = midgrade_conventional |>#repeat the process for midgrade
+  select(1:2) |> 
+  inner_join(midgrade_reformulated |> select(1:2))
+colnames(mid_reformulated_vs_conventional) = columnNames
+
+pre_reformulated_vs_conventional = premium_conventional |> #and again for premium
+  select(1:2) |> 
+  inner_join(premium_reformulated |> select(1:2))
+colnames(pre_reformulated_vs_conventional) = columnNames
+
+reg_conv_vs_ref_plot =                                     #create a plot for conventional vs
+  ggplot(data = reg_reformulated_vs_conventional,          #reformulated gas for regular grade 
+       aes(x = Date,
+           y = Conventional,
+           col = "Conventional")) + 
+  geom_line() +
+  geom_line(data = reg_reformulated_vs_conventional,
+            aes(x = Date,
+                y = Reformulated,
+                col = "Reformulated")) +
+  ggtitle("Regular") +
+  theme_classic()
+
+mid_conv_vs_ref_plot =                                    #create a plot for midgrade 
+  ggplot(data = mid_reformulated_vs_conventional,         #of conventional vs reformulated
+       aes(x = Date,
+           y = Conventional,
+           col = "Conventional")) +
+  geom_line() +
+  geom_line(data = mid_reformulated_vs_conventional,
+            aes(x = Date,
+                y = Reformulated,
+                col = "Reformulated")) +
+  ggtitle("Midgrade") +
+  theme_classic()
+
+pre_conv_vs_ref_plot =                                    #create a plot for premium
+  ggplot(data = pre_reformulated_vs_conventional,
+       aes(x = Date,
+           y = Conventional,
+           col = "Conventional")) +
+  geom_line() +
+  geom_line(data = pre_reformulated_vs_conventional,
+            aes(x = Date,
+                y = Reformulated,
+                col = "Reformulated")) +
+  ggtitle("Premium") +
+  theme_classic()
+
+reg_conv_vs_ref_plot/mid_conv_vs_ref_plot/pre_conv_vs_ref_plot #using the package
+#                                              
+
+
+
+```
+
+
+####Graph 2 
+```{r,echo=FALSE,message=FALSE,message=FALSE}
+columnNames2 = c("Date","Regular","Midgrade","Premium")   #initialize a column name vector for subseted data
+
+reg_vs_mid_vs_pre = regular_all |>                        #pull price data for regular, midgrade
+  select(1:2) |>                                          #and premium
+  inner_join(midgrade_all |> select(1:2)) |> 
+  inner_join(premium_all |> select(1:2))
+
+colnames(reg_vs_mid_vs_pre) = columnNames2                #change column names 
+
+reg_vs_mid_vs_pre_plot =                                  #plot all three gas varieties 
+  ggplot(data = reg_vs_mid_vs_pre,                        #on one graph to see relationships
+         aes(x = Date,
+             y = Regular,
+             col = "Regular")) +
+  geom_line() +
+  geom_line(data = reg_vs_mid_vs_pre,
+            aes(x = Date,
+                y = Midgrade,
+                col = "Midgrade")) +
+  geom_line() +
+  geom_line(data = reg_vs_mid_vs_pre,
+            aes(x = Date,
+                y = Premium,
+                col = "Premium")) +
+  ggtitle("Regular vs. Midgrade vs. Premium") +
+  theme_classic()
+
+reg_vs_mid_vs_pre_plot       
+
+```
+     
+     
+     
+     
+####Graph 3 
+```{r,echo=FALSE,message=FALSE,results='hide'}
+plot(allGrades_all$Date,allGrades_all$`Weekly U.S. All Grades All Formulations Retail Gasoline Prices  (Dollars per Gallon)`, type = 'l', ylim = range(0,7), col = 1, xlab = "Date", ylab = "Price") +
+  points(allGrades_all$Date,allGrades_all$`Weekly California All Grades All Formulations Retail Gasoline Prices  (Dollars per Gallon)`, type = 'l', col = 2) +
+  points(allGrades_all$Date,allGrades_all$`Weekly Colorado All Grades All Formulations Retail Gasoline Prices  (Dollars per Gallon)`, type = 'l', col = 3) + 
+  points(allGrades_all$Date,allGrades_all$`Weekly Florida All Grades All Formulations Retail Gasoline Prices  (Dollars per Gallon)`, type = 'l', col = 4) +
+  points(allGrades_all$Date,allGrades_all$`Weekly Massachusetts All Grades All Formulations Retail Gasoline Prices  (Dollars per Gallon)`, type = 'l', col = 5) +
+  points(allGrades_all$Date,allGrades_all$`Weekly Minnesota All Grades All Formulations Retail Gasoline Prices  (Dollars per Gallon)`, type = 'l', col = 6) +
+  points(allGrades_all$Date,allGrades_all$`Weekly New York All Grades All Formulations Retail Gasoline Prices  (Dollars per Gallon)`, type = 'l', col = 7) +
+  points(allGrades_all$Date,allGrades_all$`Weekly Ohio All Grades All Formulations Retail Gasoline Prices  (Dollars per Gallon)`, type = 'l', col = 8) +
+  points(allGrades_all$Date,allGrades_all$`Weekly Texas All Grades All Formulations Retail Gasoline Prices  (Dollars per Gallon)`, type = 'l', col = 9) + 
+  points(allGrades_all$Date,allGrades_all$`Weekly Washington All Grades All Formulations Retail Gasoline Prices  (Dollars per Gallon)`, type = 'l', col = 10)
+```
+
+
+
+
+
+####Graph 4 
+```{r,echo=FALSE,message=FALSE,warning=FALSE}
+CA_data = allGrades_all |> 
+  select(Date,`Weekly California All Grades All Formulations Retail Gasoline Prices  (Dollars per Gallon)`) |> 
+  mutate(state = rep('california',length(allGrades_all$`Weekly California All Grades All Formulations Retail Gasoline Prices  (Dollars per Gallon)`))) |> 
+  rename(week_gas_prices = `Weekly California All Grades All Formulations Retail Gasoline Prices  (Dollars per Gallon)`) |> 
+  drop_na()
+
+
+CO_data = allGrades_all |> 
+  select(Date,`Weekly Colorado All Grades All Formulations Retail Gasoline Prices  (Dollars per Gallon)`) |> 
+  mutate(state = rep('colorado',length(allGrades_all$`Weekly Colorado All Grades All Formulations Retail Gasoline Prices  (Dollars per Gallon)`))) |> 
+  rename(week_gas_prices = `Weekly Colorado All Grades All Formulations Retail Gasoline Prices  (Dollars per Gallon)`)|> 
+  drop_na()
+
+FL_data = allGrades_all |> 
+  select(Date,`Weekly Florida All Grades All Formulations Retail Gasoline Prices  (Dollars per Gallon)`) |> 
+  mutate(state = rep('florida',length(allGrades_all$`Weekly Florida All Grades All Formulations Retail Gasoline Prices  (Dollars per Gallon)`))) |> 
+  rename(week_gas_prices = `Weekly Florida All Grades All Formulations Retail Gasoline Prices  (Dollars per Gallon)`)|> 
+  drop_na()
+
+MA_data = allGrades_all |> 
+  select(Date,`Weekly Massachusetts All Grades All Formulations Retail Gasoline Prices  (Dollars per Gallon)`) |> 
+  mutate(state = rep('massachusetts',length(allGrades_all$`Weekly Massachusetts All Grades All Formulations Retail Gasoline Prices  (Dollars per Gallon)`))) |> 
+  rename(week_gas_prices = `Weekly Massachusetts All Grades All Formulations Retail Gasoline Prices  (Dollars per Gallon)`)|> 
+  drop_na()
+
+MN_data = allGrades_all |> 
+  select(Date,`Weekly Minnesota All Grades All Formulations Retail Gasoline Prices  (Dollars per Gallon)`) |> 
+  mutate(state = rep('minnesota',length(allGrades_all$`Weekly Minnesota All Grades All Formulations Retail Gasoline Prices  (Dollars per Gallon)`))) |> 
+  rename(week_gas_prices = `Weekly Minnesota All Grades All Formulations Retail Gasoline Prices  (Dollars per Gallon)`)|> 
+  drop_na()
+
+NY_data = allGrades_all |> 
+  select(Date,`Weekly New York All Grades All Formulations Retail Gasoline Prices  (Dollars per Gallon)`) |> 
+  mutate(state = rep('newyork',length(allGrades_all$`Weekly New York All Grades All Formulations Retail Gasoline Prices  (Dollars per Gallon)`))) |> 
+  rename(week_gas_prices = `Weekly New York All Grades All Formulations Retail Gasoline Prices  (Dollars per Gallon)`)|> 
+  drop_na()
+
+OH_data = allGrades_all |> 
+  select(Date,`Weekly Ohio All Grades All Formulations Retail Gasoline Prices  (Dollars per Gallon)`) |> 
+  mutate(state = rep('ohio',length(allGrades_all$`Weekly Ohio All Grades All Formulations Retail Gasoline Prices  (Dollars per Gallon)`))) |> 
+  rename(week_gas_prices = `Weekly Ohio All Grades All Formulations Retail Gasoline Prices  (Dollars per Gallon)`)|> 
+  drop_na()
+
+TX_data = allGrades_all |> 
+  select(Date,`Weekly Texas All Grades All Formulations Retail Gasoline Prices  (Dollars per Gallon)`) |> 
+  mutate(state = rep('texas',length(allGrades_all$`Weekly Texas All Grades All Formulations Retail Gasoline Prices  (Dollars per Gallon)`))) |> 
+  rename(week_gas_prices = `Weekly Texas All Grades All Formulations Retail Gasoline Prices  (Dollars per Gallon)`)|> 
+  drop_na()
+
+WA_data = allGrades_all |> 
+  select(Date,`Weekly Washington All Grades All Formulations Retail Gasoline Prices  (Dollars per Gallon)`) |> 
+  mutate(state = rep('washington',length(allGrades_all$`Weekly Washington All Grades All Formulations Retail Gasoline Prices  (Dollars per Gallon)`))) |> 
+  rename(week_gas_prices = `Weekly Washington All Grades All Formulations Retail Gasoline Prices  (Dollars per Gallon)`)|> 
+  drop_na()
+
+# combine each state into a dataframe of all states
+all_States = rbind(CA_data,CO_data,FL_data,MA_data,MN_data,NY_data,OH_data,TX_data,WA_data)
+
+avg_prices = all_States |>                #take the average price for each state
+  group_by(state) |>                      #and create a dataframe for adding to a map of the us
+  summarize(Mean = mean(week_gas_prices))
+
+plot_usmap(regions = "states", data = avg_prices, values = "Mean") # add mean prices to the map of the us
+```
+
+
+
+
+
