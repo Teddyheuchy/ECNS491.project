@@ -11,14 +11,17 @@ knitr::opts_chunk$set(echo = TRUE)
 #Topic: An investigation of Domestic Gas Prices
 ## By Wyatt Sigafoos and Teddy Heutching 
 
-Description of the Data:
-- The data we are using was obtained from EIA.gov reflecting gas prices of 
-various states and regions within the US.
+###Introduction
+Ranking as the second highest expense facing the modern household, transportation 
+plays a large role in the day to day functionality of life. The main method of 
+transportation for the majority of people in America for the last century has been
+the automobile, and in order to better understand how this transportation cost factors
+into the budget of the average household, an investigation into the price of gas 
+was conducted. Using data gathered from the Energy Information Administration (EIA),
+changes in the price of gas were investigated to see which regions faced the largest 
+expenses for using cars over the last few decades. The data spans across nine different
+states beginning in 2003 and ends in 2022. While the EIA publishes prices for both 
+conventional gas and reformulated gas, the overall average price was used because 
+we were interested in general trends rather than changes in specific formulations. 
 
-The Logic of our Process:
-- We decided to join two different datasets by date, one for overall average gas price 
-in the US and the other being the area specific gas prices. 
-
-Findings:
-- 
 
